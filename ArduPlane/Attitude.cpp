@@ -551,17 +551,44 @@ void Plane::calc_nav_pitch()
     // --------------------------------
     int32_t commanded_pitch = SpdHgt_Controller->get_pitch_demand();
 
+    if(g2.guided_alt_control_enable && control_mode == GUIDED) {
+    	swarm_pos_control.now_time = AP_HAL::millis();
+    	if(swarm_pos_control.now_time - swarm_pos_control.last_time > 100 || swarm_pos_control.last_time == 0) {
+    		swarm_pos_control.last_time = swarm_pos_control.now_time;
+    		swarm_pos_control.nav_pitch = calc_swarm_nav_pitch() * 100;
+    	}
+    }
+
     // Received an external msg that guides roll in the last 3 seconds?
     if ((control_mode == GUIDED || control_mode == AVOID_ADSB) &&
             plane.guided_state.last_forced_rpy_ms.y > 0 &&
             millis() - plane.guided_state.last_forced_rpy_ms.y < 3000) {
-        commanded_pitch = plane.guided_state.forced_rpy_cd.y;
+        if(g2.guided_alt_control_enable) {
+        	commanded_pitch = swarm_pos_control.nav_pitch;
+        } else {
+        	commanded_pitch = plane.guided_state.forced_rpy_cd.y;
+        }
     }
 
     nav_pitch_cd = constrain_int32(commanded_pitch, pitch_limit_min_cd, aparm.pitch_limit_max_cd.get());
 }
 
-
+float Plane::calc_swarm_nav_pitch()
+{
+	// at least 30 meter
+	if (guided_state.forced_alt < 30) {
+		guided_state.forced_alt = 30;
+	}
+	float alt_delta = guided_state.forced_alt - current_loc.alt * 0.01f;
+//	gcs().send_text(MAV_SEVERITY_WARNING, "alt=%f", current_loc.alt * 0.01f);
+	alt_delta = constrain_float(alt_delta, -35, 35);
+	if(fabsf(alt_delta) > 15) {
+		g2.aelp_pid.reset_I();
+	}
+	float new_pitch = g2.aelp_pid.get_pid(alt_delta);
+	new_pitch = constrain_float(new_pitch, -30, 30);
+	return new_pitch;
+}
 /*
   calculate a new nav_roll_cd from the navigation controller
  */

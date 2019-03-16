@@ -1504,6 +1504,18 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
         break;
     }
 
+    case MAVLINK_MSG_ID_SWARM_NAV_POSITION:
+	{
+        if (plane.control_mode != GUIDED && plane.control_mode != AVOID_ADSB) {
+            //don't screw up failsafes
+            break;
+        }
+        mavlink_swarm_nav_position_t swarm_nav_pos;
+        mavlink_msg_swarm_nav_position_decode(msg, &swarm_nav_pos);
+        plane.guided_state.forced_alt = swarm_nav_pos.nav_alt;
+		break;
+	}
+
     case MAVLINK_MSG_ID_ADSB_VEHICLE:
     case MAVLINK_MSG_ID_UAVIONIX_ADSB_OUT_CFG:
     case MAVLINK_MSG_ID_UAVIONIX_ADSB_OUT_DYNAMIC:

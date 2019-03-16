@@ -530,7 +530,14 @@ private:
         // throttle  commanded from external controller in percent
         float forced_throttle;
         uint32_t last_forced_throttle_ms;
-} guided_state;
+        float forced_alt;
+    } guided_state;
+
+	struct {
+		uint32_t last_time;
+		uint32_t now_time;
+		int32_t nav_pitch;
+	} swarm_pos_control;
 
     struct {
         // on hard landings, only check once after directly a landing so you
@@ -919,6 +926,7 @@ private:
     enum FlightMode get_previous_mode();
     void set_mode(enum FlightMode mode, mode_reason_t reason);
     void exit_mode(enum FlightMode mode);
+    void check_swarm_failsafe();
     void check_long_failsafe();
     void check_short_failsafe();
     void startup_INS_ground(void);
@@ -1039,6 +1047,8 @@ private:
     // support for AP_Avoidance custom flight mode, AVOID_ADSB
     bool avoid_adsb_init(bool ignore_checks);
     void avoid_adsb_run();
+
+    float calc_swarm_nav_pitch();
 
     enum Failsafe_Action {
         Failsafe_Action_None      = 0,

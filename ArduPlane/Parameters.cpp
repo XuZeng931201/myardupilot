@@ -1177,11 +1177,29 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("FLIGHT_OPTIONS", 13, ParametersG2, flight_options, 0),
 
+    // @Param: SWARM_FS_ENABLE
+    // @DisplayName: Swarm Failsafe Enable
+    // @Description: This enables failsafe on loss of GCS link. It only works in Guided Mode.
+    // @Values: 0:Disabled,1:Enabled
+    // @User: Advanced
+    AP_GROUPINFO("SWARM_FS_ENABLE", 14, ParametersG2, swarm_failsafe_enable, 0),
+	// @Param: GUIDED_ALT_CONTROL_ENABLE
+	// @DisplayName: GUIDED_ALTC_EN
+	// @Description:This enables alt control on guided mode.(usually for swarm).When GUIDED_ALTC_ENABLE = 1,the flight control system will receive target alt and run alt control law to get nav_pitch.
+    // @Values: 0:Disabled,1:Enabled
+    // @User: Advanced
+	AP_GROUPINFO("GUIDED_ALTC_EN", 15, ParametersG2, guided_alt_control_enable, 0),
+
+	AP_SUBGROUPINFO(aelp_pid, "ALTTOPITCH_", 16, ParametersG2, PID),
+
+	AP_GROUPINFO("SWARM_FS_TIMEOUT", 17, ParametersG2, fs_swarm_timeout, 4),
+
     AP_GROUPEND
 };
 
 ParametersG2::ParametersG2(void) :
-    ice_control(plane.rpm_sensor, plane.ahrs)
+    ice_control(plane.rpm_sensor, plane.ahrs),
+	aelp_pid(0.85,0.03,0.03,10)
 #if SOARING_ENABLED == ENABLED
     ,soaring_controller(plane.ahrs, plane.TECS_controller, plane.aparm)
 #endif

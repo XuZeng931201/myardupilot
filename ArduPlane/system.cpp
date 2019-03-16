@@ -515,6 +515,35 @@ void Plane::exit_mode(enum FlightMode mode)
     }
 }
 
+// check_swarm_failsafe - This enables failsafe on loss of both RC input and GCS link. If THR_FAILSAFE is 0,this will only detect GCS failsafe.It only works in Guided Mode
+void Plane::check_swarm_failsafe()
+{
+    uint32_t tnow = millis();
+    int16_t failsafe_counts = 0;
+    // exit if not in guided mode or rtl mode
+    // TODO:We can consider the sitution in auto mode or other position control mode
+    if (!g2.swarm_failsafe_enable || (control_mode != GUIDED && control_mode != RTL)) {
+        return;
+    }
+
+    // check gcs failsafe
+    if (failsafe.last_heartbeat_ms != 0 && (tnow - failsafe.last_heartbeat_ms) > g2.fs_swarm_timeout*1000) {
+    	failsafe_counts += 1;
+    } else {
+    	failsafe_counts -= 1;
+    }
+    failsafe_counts = constrain_int16(failsafe_counts,-5,5);
+    if (failsafe_counts >= 1) {
+        set_mode(RTL, MODE_REASON_SWARM_FAILSAFE);
+        gcs().send_text(MAV_SEVERITY_WARNING, "swarm failsafe: reason=%u",MODE_REASON_SWARM_FAILSAFE);
+    } else if (failsafe_counts <= -1) {
+        if (relative_altitude > 30 && control_mode_reason == MODE_REASON_SWARM_FAILSAFE && control_mode == RTL) {
+            set_mode(previous_mode,MODE_REASON_SWARM_FAILSAFE_RECOVERY);
+            gcs().send_text(MAV_SEVERITY_WARNING, "swarm failsafe recovery: reason=%u",MODE_REASON_SWARM_FAILSAFE_RECOVERY);
+        }
+    }
+}
+
 void Plane::check_long_failsafe()
 {
     uint32_t tnow = millis();
@@ -557,6 +586,7 @@ void Plane::check_long_failsafe()
             failsafe_long_off_event(MODE_REASON_RADIO_FAILSAFE);
         }
     }
+    check_swarm_failsafe();
 }
 
 void Plane::check_short_failsafe()

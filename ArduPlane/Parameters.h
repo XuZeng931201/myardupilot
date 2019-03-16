@@ -545,6 +545,14 @@ public:
 #endif
 
     AP_Int32 flight_options;
+
+    AP_Int8 swarm_failsafe_enable;
+
+    AP_Int8 guided_alt_control_enable;
+
+    PID aelp_pid; // alt error to pitch
+
+    AP_Float fs_swarm_timeout;
 };
 
 extern const AP_Param::Info var_info[];
