@@ -813,6 +813,16 @@ void AP_GPS::setHIL(uint8_t instance, GPS_Status _status, uint64_t time_epoch_ms
     istate.ground_course = wrap_360(degrees(atan2f(istate.velocity.y, istate.velocity.x)));
     istate.hdop = hdop;
     istate.num_sats = _num_sats;
+    //-------------------------------//
+    istate.vdop = 50;
+    istate.horizontal_accuracy = 0.2;
+    istate.vertical_accuracy = 0.2;
+    istate.speed_accuracy = 0.04;
+    istate.have_horizontal_accuracy = true;
+    istate.have_vertical_accuracy = true;
+    istate.have_speed_accuracy = true;
+    istate.have_vertical_velocity = true;
+    //-------------------------------//
     istate.last_gps_time_ms = tnow;
     uint64_t gps_time_ms = time_epoch_ms - UNIX_OFFSET_MSEC;
     istate.time_week     = gps_time_ms / AP_MSEC_PER_WEEK;
