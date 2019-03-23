@@ -11,6 +11,11 @@ AP_Baro_Backend::AP_Baro_Backend(AP_Baro &baro) :
 
 void AP_Baro_Backend::update_healthy_flag(uint8_t instance)
 {
+	// consider hil mode all health
+	if (_frontend._hil_mode) {
+		_frontend.sensors[instance].healthy = true;
+		return;
+	}
     if (instance >= _frontend._num_sensors) {
         return;
     }

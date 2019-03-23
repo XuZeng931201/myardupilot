@@ -1194,6 +1194,14 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
 
 	AP_GROUPINFO("SWARM_FS_TIMEOUT", 17, ParametersG2, fs_swarm_timeout, 4),
 
+	AP_GROUPINFO("XR_SHOT_TK_EN", 18, ParametersG2, shot_takeoff_enable, 0),
+
+	AP_GROUPINFO("XR_SHOT_ALT", 19, ParametersG2, shot_takeoff_alt_cm, 4500),
+
+	AP_GROUPINFO("XR_SHOT_TRIM_CD", 20, ParametersG2, shot_takeoff_trim_angle_cdeg, 0),
+
+	AP_GROUPINFO("XR_SHOT_TK_MS", 21, ParametersG2, shot_takeoff_release_ms, 3000),
+
     AP_GROUPEND
 };
 

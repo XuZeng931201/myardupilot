@@ -125,6 +125,38 @@ void Plane::takeoff_calc_roll(void)
  */
 void Plane::takeoff_calc_pitch(void)
 {
+	// shot take off
+	if (flight_stage == AP_Vehicle::FixedWing::FLIGHT_TAKEOFF && g2.shot_takeoff_enable) {
+		if (current_loc.alt < g2.shot_takeoff_alt_cm + home.alt) {
+			takeoff_state.last_shot_takeoff_ms = AP_HAL::millis();
+			nav_pitch_cd = auto_state.initial_pitch_cd + constrain_int32(g2.shot_takeoff_trim_angle_cdeg,-3000,3000);
+			nav_pitch_cd = constrain_int32(nav_pitch_cd, pitch_limit_min_cd, aparm.pitch_limit_max_cd.get());
+			takeoff_state.shot_takeoff_finish = false;
+			return;
+		} else if (g2.shot_takeoff_release_ms > 0 && (int32_t)(AP_HAL::millis() - takeoff_state.last_shot_takeoff_ms) < g2.shot_takeoff_release_ms&& !takeoff_state.shot_takeoff_finish) {
+			int32_t nav_pitch_normol_cd = ((gps.ground_speed()*100) / (float)aparm.airspeed_cruise_cm) * auto_state.takeoff_pitch_cd;
+			nav_pitch_normol_cd = constrain_int32(nav_pitch_normol_cd, 500, auto_state.takeoff_pitch_cd);
+			int32_t nav_pitch_shot_cd = auto_state.initial_pitch_cd + constrain_int32(g2.shot_takeoff_trim_angle_cdeg,-1000,1000);
+			int32_t nav_pitch_error = nav_pitch_shot_cd - nav_pitch_normol_cd;
+			if (fabsf(nav_pitch_error) > 300) {
+				if (g2.shot_takeoff_release_ms < 100) {
+					nav_pitch_cd = nav_pitch_normol_cd;
+				} else {
+					nav_pitch_cd = nav_pitch_shot_cd + (AP_HAL::millis() - takeoff_state.last_shot_takeoff_ms)/g2.shot_takeoff_release_ms * nav_pitch_error;
+				}
+				nav_pitch_cd = constrain_int32(nav_pitch_cd, pitch_limit_min_cd, aparm.pitch_limit_max_cd.get());
+			} else {
+				takeoff_state.shot_takeoff_finish= true;
+				gcs().send_text(MAV_SEVERITY_WARNING, "shot take off finished");
+			}
+			return;
+		}
+		if (!takeoff_state.shot_takeoff_finish) {
+			takeoff_state.shot_takeoff_finish= true;
+			gcs().send_text(MAV_SEVERITY_WARNING, "shot take off finished");
+		}
+	}
+
     if (auto_state.highest_airspeed < g.takeoff_rotate_speed) {
         // we have not reached rotate speed, use a target pitch of 5
         // degrees. This should be enough to get the tail off the

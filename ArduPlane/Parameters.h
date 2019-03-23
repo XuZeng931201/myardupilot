@@ -553,6 +553,14 @@ public:
     PID aelp_pid; // alt error to pitch
 
     AP_Float fs_swarm_timeout;
+
+    AP_Int8 shot_takeoff_enable;
+
+    AP_Int32 shot_takeoff_alt_cm;
+
+    AP_Int32 shot_takeoff_trim_angle_cdeg;
+
+    AP_Int32 shot_takeoff_release_ms;
 };
 
 extern const AP_Param::Info var_info[];

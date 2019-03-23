@@ -619,6 +619,10 @@ void Plane::startup_INS_ground(void)
             // HIL_STATE message
             gcs().send_text(MAV_SEVERITY_WARNING, "Waiting for first HIL_STATE message");
             hal.scheduler->delay(1000);
+            // exit when get hil updated
+            if (barometer._hil.updated) {
+            	break;
+            }
         }
     }
 #endif

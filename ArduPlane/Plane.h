@@ -425,7 +425,9 @@ private:
         uint32_t last_tkoff_arm_time;
         uint32_t last_check_ms;
         uint32_t last_report_ms;
+        uint32_t last_shot_takeoff_ms;
         bool launchTimerStarted;
+        bool shot_takeoff_finish;
     } takeoff_state;
     
     // ground steering controller state

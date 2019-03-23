@@ -579,8 +579,8 @@ float Plane::calc_swarm_nav_pitch()
 	if (guided_state.forced_alt < 30) {
 		guided_state.forced_alt = 30;
 	}
-	float alt_delta = guided_state.forced_alt - current_loc.alt * 0.01f;
-//	gcs().send_text(MAV_SEVERITY_WARNING, "alt=%f", current_loc.alt * 0.01f);
+	float alt_delta = guided_state.forced_alt - (current_loc.alt - home.alt) * 0.01f;
+    //gcs().send_text(MAV_SEVERITY_WARNING, "alt=%f", (current_loc.alt - home.alt) * 0.01f);
 	alt_delta = constrain_float(alt_delta, -35, 35);
 	if(fabsf(alt_delta) > 15) {
 		g2.aelp_pid.reset_I();
