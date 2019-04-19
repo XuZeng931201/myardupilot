@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <utility>
 
+#include <GCS_MAVLink/GCS.h>
+
 extern const AP_HAL::HAL &hal;
 
 #define MS4525D0_I2C_ADDR 0x28
@@ -44,6 +46,7 @@ bool AP_Airspeed_MS4525::init()
         { 1, MS4525D0_I2C_ADDR },
         { 0, MS4525D0_I2C_ADDR },
         { 2, MS4525D0_I2C_ADDR },
+		{ 3, MS4525D0_I2C_ADDR },
     };
     bool found = false;
     for (uint8_t i=0; i<ARRAY_SIZE(addresses); i++) {
@@ -67,11 +70,13 @@ bool AP_Airspeed_MS4525::init()
         found = (_last_sample_time_ms != 0);
         if (found) {
             printf("MS4525: Found sensor on bus %u address 0x%02x\n", addresses[i].bus, addresses[i].addr);
+            gcs().send_text(MAV_SEVERITY_INFO,"MS4525: Found sensor on bus %u address 0x%02x",addresses[i].bus, addresses[i].addr);
             break;
         }
     }
     if (!found) {
         printf("MS4525: no sensor found\n");
+        gcs().send_text(MAV_SEVERITY_INFO,"MS4525: no sensor found");
         return false;
     }
 

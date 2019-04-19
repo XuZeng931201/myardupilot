@@ -131,7 +131,7 @@ void Plane::init_ardupilot()
 #endif
 
     // initialise airspeed sensor
-    airspeed.init();
+    //airspeed.init();
 
     if (g.compass_enabled==true) {
         bool compass_ok = compass.init() && compass.read();
@@ -155,6 +155,7 @@ void Plane::init_ardupilot()
     }
 #endif
 
+    airspeed.init();
     // give AHRS the airspeed sensor
     ahrs.set_airspeed(&airspeed);
 
@@ -178,7 +179,9 @@ void Plane::init_ardupilot()
      *  setup the 'main loop is dead' check. Note that this relies on
      *  the RC library being initialised.
      */
+
     hal.scheduler->register_timer_failsafe(failsafe_check_static, 1000);
+
 
     init_capabilities();
 
@@ -186,6 +189,7 @@ void Plane::init_ardupilot()
 
     AP_Param::reload_defaults_file(true);
     
+
     startup_ground();
 
     // don't initialise aux rc output until after quadplane is setup as
