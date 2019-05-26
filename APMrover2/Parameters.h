@@ -380,6 +380,8 @@ public:
 
     // windvane
     AP_WindVane windvane;
+    // normal thrust, can not be reverse
+    AP_Int8 use_normal_thrust;
 };
 
 extern const AP_Param::Info var_info[];

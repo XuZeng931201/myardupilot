@@ -12,13 +12,18 @@ void Rover::set_control_channels(void)
 
     // set rc channel ranges
     channel_steer->set_angle(SERVO_MAX);
-    channel_throttle->set_angle(100);
+    // consider use normal thrust
+    if (g2.use_normal_thrust) {
+    	channel_throttle->set_range(100);
+    } else {
+    	channel_throttle->set_angle(100);
+    }
     channel_lateral->set_angle(100);
 
     // Allow to reconfigure ouput when not armed
     if (!arming.is_armed()) {
         g2.motors.setup_servo_output();
-        // For a rover safety is TRIM throttle
+        // For a rover safety is TRIM throttle if in reverse thrust mode,but safety is MIN throttle if in normal thrust mode
         g2.motors.setup_safety_output();
     }
     // setup correct scaling for ESCs like the UAVCAN PX4ESC which

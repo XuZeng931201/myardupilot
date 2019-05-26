@@ -126,6 +126,7 @@ public:
 
     friend class RC_Channel_Rover;
     friend class RC_Channels_Rover;
+    friend class AP_MotorsUGV;
 
     Rover(void);
 

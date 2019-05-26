@@ -647,6 +647,8 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @Increment: 1
     // @User: Standard
     AP_GROUPINFO("SAIL_HEEL_MAX", 35, ParametersG2, sail_heel_angle_max, 15),
+
+	AP_GROUPINFO("XR_NORMAL_THR", 36, ParametersG2, use_normal_thrust, 0),
     AP_GROUPEND
 };
 

@@ -125,7 +125,7 @@ void AP_MotorsUGV::init()
 // setup output in case of main CPU failure
 void AP_MotorsUGV::setup_safety_output()
 {
-    if (_pwm_type == PWM_TYPE_BRUSHED_WITH_RELAY) {
+    if (_pwm_type == PWM_TYPE_BRUSHED_WITH_RELAY || rover.g2.use_normal_thrust) {
         // set trim to min to set duty cycle range (0 - 100%) to servo range
         SRV_Channels::set_trim_to_min_for(SRV_Channel::k_throttle);
         SRV_Channels::set_trim_to_min_for(SRV_Channel::k_throttleLeft);
@@ -139,9 +139,9 @@ void AP_MotorsUGV::setup_safety_output()
         SRV_Channels::set_safety_limit(SRV_Channel::k_throttleRight, SRV_Channel::SRV_CHANNEL_LIMIT_ZERO_PWM);
     } else {
         // throttle channels output trim values (because rovers will go backwards if set to MIN)
-        SRV_Channels::set_safety_limit(SRV_Channel::k_throttle, SRV_Channel::SRV_CHANNEL_LIMIT_TRIM);
-        SRV_Channels::set_safety_limit(SRV_Channel::k_throttleLeft, SRV_Channel::SRV_CHANNEL_LIMIT_TRIM);
-        SRV_Channels::set_safety_limit(SRV_Channel::k_throttleRight, SRV_Channel::SRV_CHANNEL_LIMIT_TRIM);
+        SRV_Channels::set_safety_limit(SRV_Channel::k_throttle, rover.g2.use_normal_thrust>0?SRV_Channel::SRV_CHANNEL_LIMIT_MIN:SRV_Channel::SRV_CHANNEL_LIMIT_TRIM);
+        SRV_Channels::set_safety_limit(SRV_Channel::k_throttleLeft, rover.g2.use_normal_thrust>0?SRV_Channel::SRV_CHANNEL_LIMIT_MIN:SRV_Channel::SRV_CHANNEL_LIMIT_TRIM);
+        SRV_Channels::set_safety_limit(SRV_Channel::k_throttleRight, rover.g2.use_normal_thrust>0?SRV_Channel::SRV_CHANNEL_LIMIT_MIN:SRV_Channel::SRV_CHANNEL_LIMIT_TRIM);
     }
 
     // stop sending pwm if main CPU fails
@@ -156,12 +156,21 @@ void AP_MotorsUGV::setup_servo_output()
     // k_steering are limited to -45;45 degree
     SRV_Channels::set_angle(SRV_Channel::k_steering, SERVO_MAX);
 
-    // k_throttle are in power percent so -100 ... 100
-    SRV_Channels::set_angle(SRV_Channel::k_throttle, 100);
+    // consider use normal thrust
+    if (rover.g2.use_normal_thrust) {
+        // k_throttle are in power percent so 0 ... 100
+    	SRV_Channels::set_range(SRV_Channel::k_throttle, 100);
+        // skid steering left/right throttle as 0 to 1000 values
+        SRV_Channels::set_range(SRV_Channel::k_throttleLeft,  1000);
+        SRV_Channels::set_range(SRV_Channel::k_throttleRight, 1000);
 
-    // skid steering left/right throttle as -1000 to 1000 values
-    SRV_Channels::set_angle(SRV_Channel::k_throttleLeft,  1000);
-    SRV_Channels::set_angle(SRV_Channel::k_throttleRight, 1000);
+    } else {
+        // k_throttle are in power percent so -100 ... 100
+    	SRV_Channels::set_angle(SRV_Channel::k_throttle, 100);
+        // skid steering left/right throttle as -1000 to 1000 values
+        SRV_Channels::set_angle(SRV_Channel::k_throttleLeft,  1000);
+        SRV_Channels::set_angle(SRV_Channel::k_throttleRight, 1000);
+    }
 
     // custom config motors set in power percent so -100 ... 100
     for (uint8_t i=0; i<AP_MOTORS_NUM_MOTORS_MAX; i++) {
@@ -263,7 +272,7 @@ void AP_MotorsUGV::set_steering(float steering, bool apply_scaling)
     _scale_steering = apply_scaling;
 }
 
-// set throttle as a value from -100 to 100
+// set throttle as a value
 void AP_MotorsUGV::set_throttle(float throttle)
 {
     // only allow setting throttle if armed
@@ -271,8 +280,14 @@ void AP_MotorsUGV::set_throttle(float throttle)
         return;
     }
 
-    // check throttle is between -_throttle_max and  +_throttle_max
-    _throttle = constrain_float(throttle, -_throttle_max, _throttle_max);
+    // consider use normal thrust
+    if (rover.g2.use_normal_thrust) {
+    	// check throttle is between -_throttle_min and  +_throttle_max
+    	_throttle = constrain_float(throttle, 0, _throttle_max);
+    } else {
+    	// check throttle is between -_throttle_max and  +_throttle_max
+    	_throttle = constrain_float(throttle, -_throttle_max, _throttle_max);
+    }
 }
 
 // set lateral input as a value from -100 to +100
@@ -638,11 +653,16 @@ void AP_MotorsUGV::output_skid_steering(bool armed, float steering, float thrott
 
     // skid steering mixer
     float steering_scaled = steering / 4500.0f; // steering scaled -1 to +1
-    float throttle_scaled = throttle / 100.0f;  // throttle scaled -1 to +1
+    float throttle_scaled = throttle / 100.0f;  // throttle scaled
 
     // apply constraints
     steering_scaled = constrain_float(steering_scaled, -1.0f, 1.0f);
-    throttle_scaled = constrain_float(throttle_scaled, -1.0f, 1.0f);
+    // consider use noraml thrust
+    if (rover.g2.use_normal_thrust) {
+    	throttle_scaled = constrain_float(throttle_scaled, 0.0f, 1.0f);
+    } else {
+    	throttle_scaled = constrain_float(throttle_scaled, -1.0f, 1.0f);
+    }
 
     // check for saturation and scale back throttle and steering proportionally
     const float saturation_value = fabsf(steering_scaled) + fabsf(throttle_scaled);
@@ -805,7 +825,11 @@ void AP_MotorsUGV::set_limits_from_input(bool armed, float steering, float throt
     // set limits based on inputs
     limit.steer_left = !armed || (steering <= -4500.0f);
     limit.steer_right = !armed || (steering >= 4500.0f);
-    limit.throttle_lower = !armed || (throttle <= -_throttle_max);
+    if (rover.g2.use_normal_thrust) {
+    	limit.throttle_lower = !armed || (throttle <= 0);
+    } else {
+    	limit.throttle_lower = !armed || (throttle <= -_throttle_max);
+    }
     limit.throttle_upper = !armed || (throttle >= _throttle_max);
 }
 
