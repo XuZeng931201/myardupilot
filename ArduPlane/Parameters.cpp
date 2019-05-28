@@ -944,7 +944,7 @@ const AP_Param::Info Plane::var_info[] = {
     { AP_PARAM_GROUP, "Q_A_", Parameters::k_param_q_attitude_control,
       (const void *)&plane.quadplane.attitude_control,
       {group_info : AC_AttitudeControl_Multi::var_info}, AP_PARAM_FLAG_POINTER },
-    
+#if SHOWPARAM == ENABLED
     // @Group: RLL2SRV_
     // @Path: ../libraries/APM_Control/AP_RollController.cpp
 	GOBJECT(rollController,         "RLL2SRV_",   AP_RollController),
@@ -956,7 +956,7 @@ const AP_Param::Info Plane::var_info[] = {
     // @Group: YAW2SRV_
     // @Path: ../libraries/APM_Control/AP_YawController.cpp
 	GOBJECT(yawController,          "YAW2SRV_",   AP_YawController),
-
+#endif
     // @Group: STEER2SRV_
     // @Path: ../libraries/APM_Control/AP_SteerController.cpp
 	GOBJECT(steerController,        "STEER2SRV_",   AP_SteerController),
@@ -1002,6 +1002,7 @@ const AP_Param::Info Plane::var_info[] = {
     // @Group: ARSPD
     // @Path: ../libraries/AP_Airspeed/AP_Airspeed.cpp
     GOBJECT(airspeed,                               "ARSPD",   AP_Airspeed),
+#if SHOWPARAM == ENABLED
 
     // @Group: NAVL1_
     // @Path: ../libraries/AP_L1_Control/AP_L1_Control.cpp
@@ -1010,6 +1011,7 @@ const AP_Param::Info Plane::var_info[] = {
     // @Group: TECS_
     // @Path: ../libraries/AP_TECS/AP_TECS.cpp
     GOBJECT(TECS_controller,         "TECS_",   AP_TECS),
+#endif
 
 #if MOUNT == ENABLED
     // @Group: MNT

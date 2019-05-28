@@ -374,6 +374,11 @@
  #define OSD_ENABLED DISABLED
 #endif
 
+// hide the param
+#ifndef SHOWPARAM
+ #define SHOWPARAM ENABLED
+#endif
+
 #ifndef SOARING_ENABLED
 #if HAL_MINIMIZE_FEATURES
  #define SOARING_ENABLED DISABLED
