@@ -127,9 +127,15 @@ void Plane::takeoff_calc_pitch(void)
 {
 	// shot take off
 	if (flight_stage == AP_Vehicle::FixedWing::FLIGHT_TAKEOFF && g2.shot_takeoff_enable) {
+        // see if we are under the take off alt
 		if (current_loc.alt < g2.shot_takeoff_alt_cm + home.alt) {
 			takeoff_state.last_shot_takeoff_ms = AP_HAL::millis();
-			nav_pitch_cd = auto_state.initial_pitch_cd + constrain_int32(g2.shot_takeoff_trim_angle_cdeg,-3000,3000);
+            if (g2.shot_takeoff_use_angle_cdeg > 0) {
+                nav_pitch_cd = g2.shot_takeoff_use_angle_cdeg;
+            } else {
+                nav_pitch_cd = auto_state.initial_pitch_cd + constrain_int32(g2.shot_takeoff_trim_angle_cdeg,-3000,3000);
+            }
+
 			nav_pitch_cd = constrain_int32(nav_pitch_cd, pitch_limit_min_cd, aparm.pitch_limit_max_cd.get());
 			takeoff_state.shot_takeoff_finish = false;
 			return;
@@ -137,6 +143,10 @@ void Plane::takeoff_calc_pitch(void)
 			int32_t nav_pitch_normol_cd = ((gps.ground_speed()*100) / (float)aparm.airspeed_cruise_cm) * auto_state.takeoff_pitch_cd;
 			nav_pitch_normol_cd = constrain_int32(nav_pitch_normol_cd, 500, auto_state.takeoff_pitch_cd);
 			int32_t nav_pitch_shot_cd = auto_state.initial_pitch_cd + constrain_int32(g2.shot_takeoff_trim_angle_cdeg,-1000,1000);
+            if (g2.shot_takeoff_use_angle_cdeg > 0) {
+                nav_pitch_shot_cd = g2.shot_takeoff_use_angle_cdeg;
+            }
+            nav_pitch_shot_cd = constrain_int32(nav_pitch_shot_cd, pitch_limit_min_cd, aparm.pitch_limit_max_cd.get());
 			int32_t nav_pitch_error = nav_pitch_shot_cd - nav_pitch_normol_cd;
 			if (fabsf(nav_pitch_error) > 300) {
 				if (g2.shot_takeoff_release_ms < 100) {

@@ -561,6 +561,8 @@ public:
     AP_Int32 shot_takeoff_trim_angle_cdeg;
 
     AP_Int32 shot_takeoff_release_ms;
+
+    AP_Int32 shot_takeoff_use_angle_cdeg;
 };
 
 extern const AP_Param::Info var_info[];
