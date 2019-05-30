@@ -1185,19 +1185,37 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @Values: 0:Disabled,1:Enabled
     // @User: Advanced
     AP_GROUPINFO("SWARM_FS_ENABLE", 14, ParametersG2, swarm_failsafe_enable, 0),
-	// @Param: GUIDED_ALT_CONTROL_ENABLE
-	// @DisplayName: GUIDED_ALTC_EN
+	// @Param: GUIDED_ALTC_EN
+	// @DisplayName: guided alt control enable
 	// @Description:This enables alt control on guided mode.(usually for swarm).When GUIDED_ALTC_ENABLE = 1,the flight control system will receive target alt and run alt control law to get nav_pitch.
     // @Values: 0:Disabled,1:Enabled
     // @User: Advanced
 	AP_GROUPINFO("GUIDED_ALTC_EN", 15, ParametersG2, guided_alt_control_enable, 0),
 
+    // @Group: ALTTOPITCH_
+    // @Path: ../libraries/PID/PID.cpp
 	AP_SUBGROUPINFO(aelp_pid, "ALTTOPITCH_", 16, ParametersG2, PID),
 
+	// @Param: SWARM_FS_TIMEOUT
+	// @DisplayName: swarm failsafe timeout
+	// @Description:This param determine that how long the vehicle will enter swaram failsafe(we assume swarm mode is Guided).So this param is not effective for other control mode
+    // @Range: 0 65535
+    // @Units: s
+    // @User: Advanced
 	AP_GROUPINFO("SWARM_FS_TIMEOUT", 17, ParametersG2, fs_swarm_timeout, 4),
 
+	// @Param: XR_SHOT_TK_EN
+	// @DisplayName: shot take off enable
+	// @Description:This param create a new option for take-off stage which includes shot on capapult and so on. 
+    // @Values: 0:Disabled,1:Enabled
+    // @User: Advanced
 	AP_GROUPINFO("XR_SHOT_TK_EN", 18, ParametersG2, shot_takeoff_enable, 0),
 
+	// @Param: XR_SHOT_ALT
+	// @DisplayName: shot take off alt
+	// @Description: This is an alt which determines whether vehicle has finished shot take-off. Normally, this alt is lower than automatic takeoff alt that set by GCS.
+    // @Units: cm
+    // @User: Advanced
 	AP_GROUPINFO("XR_SHOT_ALT", 19, ParametersG2, shot_takeoff_alt_cm, 4500),
 
 	AP_GROUPINFO("XR_SHOT_TRIM_CD", 20, ParametersG2, shot_takeoff_trim_angle_cdeg, 0),

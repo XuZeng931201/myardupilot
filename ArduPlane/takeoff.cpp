@@ -152,7 +152,7 @@ void Plane::takeoff_calc_pitch(void)
 				if (g2.shot_takeoff_release_ms < 100) {
 					nav_pitch_cd = nav_pitch_normol_cd;
 				} else {
-					nav_pitch_cd = nav_pitch_shot_cd + (AP_HAL::millis() - takeoff_state.last_shot_takeoff_ms)/g2.shot_takeoff_release_ms * nav_pitch_error;
+					nav_pitch_cd = nav_pitch_shot_cd - (AP_HAL::millis() - takeoff_state.last_shot_takeoff_ms)/g2.shot_takeoff_release_ms * nav_pitch_error;
 				}
 				nav_pitch_cd = constrain_int32(nav_pitch_cd, pitch_limit_min_cd, aparm.pitch_limit_max_cd.get());
 			} else {
